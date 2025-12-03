@@ -1,0 +1,1836 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Recetario de Nini</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Lato:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- VARIABLES & RESET --- */
+        :root {
+            --bg-paper: #f9f1d8;
+            --bg-card: #fffefae6;
+            --ink-primary: #3e2723; 
+            --ink-secondary: #5d4037;
+            --ink-accent: #c62828; 
+            --highlight: #ffecb3;
+            
+            --font-hand: 'Dancing Script', cursive; 
+            --font-serif: 'Playfair Display', serif; 
+            --font-body: 'Lato', sans-serif; 
+            
+            --shadow-soft: 0 4px 15px rgba(62, 39, 35, 0.1);
+            --shadow-hover: 0 8px 25px rgba(62, 39, 35, 0.15);
+            --border-radius: 8px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-paper);
+            background-image: radial-gradient(#d7ccc8 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: var(--ink-primary);
+            font-family: var(--font-body);
+            line-height: 1.6;
+            padding-bottom: 50px;
+        }
+
+        /* --- LAYOUT PRINCIPAL --- */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-top: 40px;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        header::after {
+            content: '';
+            display: block;
+            width: 100px;
+            height: 3px;
+            background: var(--ink-accent);
+            margin: 20px auto 0;
+            border-radius: 2px;
+        }
+
+        h1 {
+            font-family: var(--font-serif);
+            font-size: 3.5rem;
+            color: var(--ink-primary);
+            margin-bottom: 5px;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            font-family: var(--font-hand);
+            font-size: 1.8rem;
+            color: var(--ink-secondary);
+            font-weight: 600;
+        }
+
+        /* --- CONTROLES --- */
+        .controls-wrapper {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(5px);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(62, 39, 35, 0.1);
+            margin-bottom: 40px;
+            box-shadow: var(--shadow-soft);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 280px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 15px;
+            padding-left: 40px;
+            border: 2px solid #d7ccc8;
+            border-radius: 25px;
+            background: #fff;
+            font-family: var(--font-body);
+            font-size: 1rem;
+            color: var(--ink-primary);
+            transition: border-color 0.3s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--ink-accent);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            fill: #a1887f;
+        }
+
+        .filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: transparent;
+            border: 2px solid var(--ink-primary);
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-family: var(--font-body);
+            font-weight: 700;
+            color: var(--ink-primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover {
+            background: rgba(62, 39, 35, 0.05);
+        }
+
+        .filter-btn.active {
+            background: var(--ink-primary);
+            color: #fff;
+        }
+
+        /* --- GRID --- */
+        .recipe-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-soft);
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%) rotate(-2deg);
+            width: 100px;
+            height: 35px;
+            background: rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .card-body {
+            padding: 25px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-category {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #8d6e63;
+            margin-bottom: 10px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .gluten-warning {
+            color: var(--ink-accent);
+            border: 1px solid var(--ink-accent);
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-size: 0.65rem;
+        }
+
+        .card h3 {
+            font-family: var(--font-serif);
+            font-size: 1.6rem;
+            margin-bottom: 15px;
+            color: var(--ink-primary);
+            line-height: 1.2;
+        }
+
+        .card-preview {
+            font-size: 0.95rem;
+            color: #5d4037;
+            font-style: italic;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            opacity: 0.8;
+        }
+        
+        .card-footer {
+            padding: 15px 25px;
+            background: rgba(62, 39, 35, 0.03);
+            border-top: 1px dashed rgba(62, 39, 35, 0.1);
+            font-size: 0.85rem;
+            color: #795548;
+            text-align: right;
+            font-weight: bold;
+        }
+
+        /* --- MODAL --- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(45, 30, 25, 0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: #fffdf5;
+            width: 100%;
+            max-width: 750px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border-radius: 8px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            position: relative;
+            background-image: var(--paper-texture);
+            scrollbar-width: thin;
+            scrollbar-color: #a1887f #eee;
+        }
+
+        .modal-header {
+            padding: 30px 40px;
+            background: rgba(62, 39, 35, 0.03);
+            border-bottom: 2px solid rgba(62, 39, 35, 0.1);
+        }
+
+        .modal-body {
+            padding: 40px;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 2.5rem;
+            color: #8d6e63;
+            cursor: pointer;
+            line-height: 0.8;
+            transition: color 0.2s;
+        }
+
+        .close-btn:hover { color: var(--ink-accent); }
+
+        .recipe-title-large {
+            font-family: var(--font-serif);
+            font-size: 2.5rem;
+            color: var(--ink-primary);
+            margin-bottom: 10px;
+        }
+
+        .recipe-tags {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9rem;
+            color: #6d4c41;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .tag-gluten-free {
+            color: #2e7d32;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .tag-gluten {
+            color: var(--ink-accent);
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* --- VISOR DE IMAGEN ORIGINAL --- */
+        .original-img-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: #fff;
+            border: 1px solid #d7ccc8;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: var(--font-body);
+            font-weight: bold;
+            color: #5d4037;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+            margin-top: 10px;
+        }
+
+        .original-img-toggle:hover {
+            background: #efebe9;
+            transform: translateY(-1px);
+        }
+
+        .original-image-container {
+            display: none;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            background: rgba(0,0,0,0.03);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px dashed #a1887f;
+        }
+
+        .original-image-container.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .original-image {
+            max-width: 100%;
+            height: auto;
+            border: 5px solid #fff;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            transform: rotate(-1deg);
+            filter: sepia(0.2) contrast(1.1); /* Efecto vintage sutil */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Scaler Control */
+        .scaler-container {
+            margin-top: 20px;
+            display: inline-flex;
+            align-items: center;
+            background: #fff;
+            border: 1px solid #d7ccc8;
+            border-radius: 30px;
+            padding: 5px 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .scaler-label { font-size: 0.9rem; margin-right: 15px; color: #5d4037; font-weight: 700; }
+        .scaler-btn { width: 28px; height: 28px; border-radius: 50%; border: none; background: var(--ink-primary); color: #fff; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; transition: background 0.2s; }
+        .scaler-btn:hover { background: var(--ink-secondary); }
+        .scaler-value { font-size: 1.2rem; font-weight: bold; min-width: 30px; text-align: center; margin: 0 10px; font-family: var(--font-serif); }
+
+        .ingredients-section {
+            margin-bottom: 40px;
+            background: rgba(255, 236, 179, 0.2); 
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #ffe082;
+        }
+
+        h3.section-title {
+            font-family: var(--font-hand);
+            font-size: 2rem;
+            color: var(--ink-secondary);
+            margin-bottom: 20px;
+            border-bottom: 1px dashed #d7ccc8;
+            display: inline-block;
+        }
+
+        .ingredients-list { list-style: none; }
+        .ingredients-list li { padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: baseline; }
+        .ing-qty { font-weight: bold; color: var(--ink-primary); font-size: 1.1rem; }
+        .ing-name { color: #5d4037; text-align: right; width: 70%; }
+        .instructions-text { font-size: 1.1rem; line-height: 1.8; color: #3e2723; white-space: pre-line; }
+        .quote { margin-top: 40px; text-align: right; font-family: var(--font-hand); font-size: 1.5rem; color: #8d6e63; }
+        .empty-state { grid-column: 1 / -1; text-align: center; padding: 50px; color: #8d6e63; font-size: 1.2rem; font-style: italic; }
+        
+        @media (max-width: 600px) {
+            h1 { font-size: 2.5rem; }
+            .controls-wrapper { flex-direction: column; align-items: stretch; }
+            .modal-content { padding: 0; width: 95%; max-height: 85vh; }
+            .modal-header, .modal-body { padding: 20px; }
+            .scaler-container { width: 100%; justify-content: space-between; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>El Recetario de Nini</h1>
+        <p class="subtitle">Secretos de cocina, escritos con amor</p>
+    </header>
+
+    <div class="controls-wrapper">
+        <div class="search-box">
+            <svg class="search-icon" viewBox="0 0 24 24">
+                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+            </svg>
+            <input type="text" id="searchInput" placeholder="¿Qué ingrediente tienes? (ej. maizena, pescado)...">
+        </div>
+        <div class="filters">
+            <button class="filter-btn active" onclick="app.filter('all', this)">Todas</button>
+            <button class="filter-btn" onclick="app.filter('Salado', this)">Saladas</button>
+            <button class="filter-btn" onclick="app.filter('Dulce', this)">Dulces</button>
+            <button class="filter-btn" onclick="app.filter('Bebida', this)">Licores</button>
+        </div>
+    </div>
+
+    <div id="recipeGrid" class="recipe-grid">
+        <!-- JS inyectará las tarjetas aquí -->
+    </div>
+</div>
+
+<!-- MODAL -->
+<div id="modalOverlay" class="modal-overlay" onclick="app.closeModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <span class="close-btn" onclick="app.closeModal()">&times;</span>
+        
+        <div class="modal-header">
+            <h2 id="modalTitle" class="recipe-title-large">Título Receta</h2>
+            <div class="recipe-tags">
+                <span id="modalCategory">Categoría</span>
+                <span id="modalGluten"></span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                <!-- PORCIONES -->
+                <div class="scaler-container">
+                    <span class="scaler-label">Ajustar Receta:</span>
+                    <button class="scaler-btn" onclick="app.updatePortion(-1)">-</button>
+                    <span id="portionDisplay" class="scaler-value">x1</span>
+                    <button class="scaler-btn" onclick="app.updatePortion(1)">+</button>
+                </div>
+
+                <!-- BOTON VER ORIGINAL -->
+                <button id="viewOriginalBtn" class="original-img-toggle" onclick="app.toggleOriginalImage()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    Ver Manuscrito Original
+                </button>
+            </div>
+        </div>
+
+        <div class="modal-body">
+            <!-- CONTENEDOR IMAGEN ORIGINAL -->
+            <div id="originalImageContainer" class="original-image-container">
+                <img id="originalImage" class="original-image" src="" alt="Manuscrito original">
+                <p style="margin-top:10px; font-size:0.8rem; color:#666;">(Puede demorar en cargar según el tamaño de la foto)</p>
+            </div>
+
+            <div class="ingredients-section">
+                <h3 class="section-title">Ingredientes</h3>
+                <ul id="modalIngredients" class="ingredients-list">
+                    <!-- Lista dinámica -->
+                </ul>
+            </div>
+
+            <h3 class="section-title">Preparación</h3>
+            <p id="modalInstructions" class="instructions-text">
+                <!-- Texto dinámico -->
+            </p>
+            
+            <p class="quote">" Que salga rico... "</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    const recipesDB = [
+        {
+            id: 1,
+            title: "Tarta de Pescado",
+            category: "Salado",
+            containsGluten: true,
+            imgFile: "IMG_20251202_134838773_AE.jpg",
+            ingredients: [
+                { qty: 1, unit: "kg", name: "Filet de pescado" },
+                { qty: 1, unit: "plato", name: "Verduras para hervir (al gusto)" },
+                { qty: 1, unit: "kg", name: "Papas y zanahorias (para puré)" },
+                { qty: 50, unit: "gr", name: "Mayonesa (relleno)" },
+                { qty: 300, unit: "gr", name: "Harina (Masa)" },
+                { qty: 150, unit: "gr", name: "Manteca (Masa)" },
+                { qty: 6, unit: "cdas", name: "Agua fría (Masa)" },
+                { qty: 1, unit: "cant.", name: "Mayonesa extra para decorar" }
+            ],
+            instructions: "1. Hervir el pescado junto con las verduras.\n2. Aparte, hacer un puré de papa y zanahoria, asegurando que quede bien tamizado.\n3. Mezclar el filet ya cocido y desmenuzado con el puré y 'un poquito' de mayonesa.\n4. Volcar esta preparación sobre la masa de tarta previamente cocida.\n5. Dejar enfriar y decorar con mayonesa a gusto antes de servir."
+        },
+        {
+            id: 2,
+            title: "Pollo Amalia",
+            category: "Salado",
+            containsGluten: false,
+            imgFile: "IMG_20251202_134838773_AE.jpg",
+            ingredients: [
+                { qty: 1, unit: "pollo", name: "Pollo cortado en presas" },
+                { qty: 2, unit: "hojas", name: "Laurel" },
+                { qty: 3, unit: "u", name: "Tomates frescos picados" },
+                { qty: 1, unit: "atado", name: "Perejil picado" },
+                { qty: 3, unit: "dientes", name: "Ajo picado" },
+                { qty: 1, unit: "chorro", name: "Vino seco" }
+            ],
+            instructions: "1. Freír el pollo en presas junto con unas hojas de laurel.\n2. Agregarle los tomates frescos picados.\n3. Luego incorporar el perejil y el ajo bien picados.\n4. Finalmente, añadir un buen chorro de vino seco y dejar cocinar hasta que el pollo esté listo y la salsa reducida."
+        },
+        {
+            id: 3,
+            title: "Humita en Olla",
+            category: "Salado",
+            containsGluten: true,
+            imgFile: "IMG_20251202_134737308_AE.jpg",
+            ingredients: [
+                { qty: 8, unit: "u", name: "Choclos (grano cortado)" },
+                { qty: 100, unit: "gr", name: "Manteca" },
+                { qty: 0.5, unit: "taza", name: "Aceite" },
+                { qty: 1, unit: "u", name: "Cebolla" },
+                { qty: 3, unit: "u", name: "Tomates al natural" },
+                { qty: 3, unit: "cditas", name: "Azúcar" },
+                { qty: 1, unit: "pizca", name: "Pimienta" },
+                { qty: 1, unit: "taza", name: "Leche" },
+                { qty: 1, unit: "cda", name: "Harina o Maizena (para espesar)" }
+            ],
+            instructions: "1. Mezclar la manteca con el aceite en una olla.\n2. Freír allí la cebolla y los tomates.\n3. Agregar las cucharaditas de azúcar y un poquito de pimienta. Dejar hervir un poco.\n4. Agregar la leche y un poco de agua.\n5. Incorporar los granos de choclo.\n6. Cuando el grano esté cocido, espesar la preparación con un poco de harina o maizena disuelta."
+        },
+        {
+            id: 4,
+            title: "Torta Merengada de Coco",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_134727521_AE.jpg",
+            ingredients: [
+                { qty: 150, unit: "gr", name: "Manteca" },
+                { qty: 200, unit: "gr", name: "Azúcar" },
+                { qty: 360, unit: "gr", name: "Harina" },
+                { qty: 4, unit: "cditas", name: "Polvo Royal" },
+                { qty: 0.5, unit: "cdita", name: "Sal" },
+                { qty: 0.5, unit: "taza", name: "Leche" },
+                { qty: 4, unit: "u", name: "Yemas de huevo" },
+                { qty: 1, unit: "cdita", name: "Vainilla" },
+                { qty: 3, unit: "cdas", name: "Azúcar (para merengue)" },
+                { qty: 100, unit: "gr", name: "Coco rallado" }
+            ],
+            instructions: "1. Batir la manteca hasta que esté cremosa y agregar poco a poco el azúcar, batiendo.\n2. Tamizar juntos la harina, el royal y la sal.\n3. Agregar los secos a la mezcla anterior alternando con la leche (previamente mezclada con las yemas y la esencia).\n4. Cocinar en molde enmantecado y enharinado.\n5. Batir el merengue a punto nieve, agregar el azúcar y luego el coco.\n6. Cubrir la torta con este merengue y cocinar todo junto."
+        },
+        {
+            id: 5,
+            title: "Pasta Frola",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_134815363_AE.jpg",
+            ingredients: [
+                { qty: 330, unit: "gr", name: "Harina" },
+                { qty: 90, unit: "gr", name: "Maizena" },
+                { qty: 2, unit: "cditas", name: "Polvo de hornear" },
+                { qty: 200, unit: "gr", name: "Azúcar" },
+                { qty: 150, unit: "gr", name: "Manteca" },
+                { qty: 1, unit: "chorrito", name: "Esencia de Vainilla" },
+                { qty: 3, unit: "u", name: "Yemas" },
+                { qty: 400, unit: "gr", name: "Dulce de Batata o Membrillo" }
+            ],
+            instructions: "1. Tamizar juntos harina, maizena y polvo de hornear.\n2. Colocar en el centro el azúcar, la manteca, la esencia y las yemas.\n3. Unir los ingredientes del centro y formar la masa sin trabajarla demasiado.\n4. Dejar descansar media hora en frío.\n5. Estirar la masa (reservando una parte para las tiras).\n6. Rellenar con el dulce deshecho y cubrir con el clásico enrejado."
+        },
+        {
+            id: 6,
+            title: "Berenjenas Rellenas",
+            category: "Salado",
+            containsGluten: false,
+            imgFile: "IMG_20251202_134742516_AE.jpg",
+            ingredients: [
+                { qty: 6, unit: "u", name: "Berenjenas" },
+                { qty: 100, unit: "gr", name: "Jamón cocido" },
+                { qty: 1, unit: "atado", name: "Perejil" },
+                { qty: 100, unit: "gr", name: "Queso gruyere picado" },
+                { qty: 1, unit: "u", name: "Huevo" },
+                { qty: 50, unit: "gr", name: "Manteca" },
+                { qty: 1, unit: "pizca", name: "Sal" }
+            ],
+            instructions: "1. Cortar las berenjenas a lo largo y cortarles las puntas.\n2. Quitar la pulpa dejando una capa fina adherida a la cáscara.\n3. Hervir la pulpa en agua con sal gruesa por 1 hora.\n4. Secar la pulpa y picarla finito junto con el jamón cocido y el perejil.\n5. Agregar el queso gruyere, sal y el huevo.\n6. Rellenar las berenjenas, colocarlas en fuente enmantecada, poner daditos de manteca encima y hornear."
+        },
+        {
+            id: 7,
+            title: "Islas Flotantes",
+            category: "Dulce",
+            containsGluten: false,
+            imgFile: "IMG_20251202_134754998_AE.jpg",
+            ingredients: [
+                { qty: 750, unit: "ml", name: "Leche" },
+                { qty: 200, unit: "gr", name: "Azúcar" },
+                { qty: 7, unit: "cdas", name: "Maizena" },
+                { qty: 2, unit: "u", name: "Huevos (yemas y claras sep.)" },
+                { qty: 1, unit: "cdita", name: "Vainilla" }
+            ],
+            instructions: "1. Hacer hervir la leche con el azúcar y la vainilla.\n2. Batir las claras a punto nieve.\n3. Cocinar las claras por cucharadas dentro de la leche hirviendo. Retirarlas.\n4. Disolver la maizena en un poco de leche fría junto con las yemas.\n5. Agregar esto a la leche caliente y cocinar revolviendo hasta espesar (tipo crema sambayón)."
+        },
+        {
+            id: 8,
+            title: "Arrollado de Fiambre",
+            category: "Salado",
+            containsGluten: true,
+            imgFile: "IMG_20251202_134823500_AE.jpg",
+            ingredients: [
+                { qty: 500, unit: "gr", name: "Acelga o Espinaca cocida" },
+                { qty: 150, unit: "gr", name: "Manteca" },
+                { qty: 100, unit: "gr", name: "Queso rallado" },
+                { qty: 100, unit: "gr", name: "Mortadela (u otro fiambre)" },
+                { qty: 2, unit: "cdas", name: "Harina" },
+                { qty: 250, unit: "ml", name: "Leche (aprox 1/4 L)" },
+                { qty: 6, unit: "u", name: "Huevos" }
+            ],
+            instructions: "1. Cocinar la verdura en agua y sal, escurrir y picar.\n2. Poner en cacerola 50g de manteca, agregar harina, mezclar y agregar de a poco leche caliente (Salsa Blanca).\n3. Condimentar. Batir ligeramente 4 huevos, mezclar con la verdura y la mitad del queso rallado.\n4. Cocinar en placa con manteca (tipo omelette al horno).\n5. Extender sobre la mesa, untar con salsa blanca, agregar el fiambre picado, enrollar (con ayuda de servilleta) y llevar a heladera."
+        },
+        {
+            id: 9,
+            title: "Torta de Nueces (Antaño)",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_134935689_AE.jpg",
+            ingredients: [
+                { qty: 180, unit: "gr", name: "Manteca" },
+                { qty: 225, unit: "gr", name: "Azúcar" },
+                { qty: 3, unit: "u", name: "Huevos" },
+                { qty: 250, unit: "gr", name: "Harina" },
+                { qty: 0.25, unit: "cdita", name: "Sal" },
+                { qty: 2.5, unit: "cditas", name: "Polvo Royal" },
+                { qty: 1, unit: "taza", name: "Nueces picadas" },
+                { qty: 0.75, unit: "taza", name: "Leche" },
+                { qty: 2, unit: "cditas", name: "Vainilla" }
+            ],
+            instructions: "1. Batir bien la manteca con el azúcar.\n2. Incorporar las yemas bien batidas.\n3. Tamizar los ingredientes secos y agregarles las nueces picadas bien finas.\n4. Agregar a la preparación anterior alternando con la leche y vainilla.\n5. Por último agregar las claras batidas a nieve muy suave.\n6. Cocinar en horno moderado."
+        },
+        {
+            id: 10,
+            title: "Mousse de Limón",
+            category: "Dulce",
+            containsGluten: false,
+            imgFile: "IMG_20251202_134939430_AE.jpg",
+            ingredients: [
+                { qty: 4, unit: "u", name: "Limones grandes (jugo y ralladura)" },
+                { qty: 4, unit: "u", name: "Huevos (yemas y claras sep.)" },
+                { qty: 200, unit: "gr", name: "Azúcar" },
+                { qty: 1, unit: "cda", name: "Maizena" },
+                { qty: 500, unit: "ml", name: "Crema de leche" },
+                { qty: 2, unit: "cditas", name: "Kirsch" }
+            ],
+            instructions: "1. Batir las yemas con el azúcar hasta que tomen color claro y el azúcar se disuelva.\n2. Incorporar el jugo de los limones en el que habrá disuelto la maizena.\n3. Mezclar y llevar a cocinar a baño María revolviendo con cuchara de madera hasta espesar (cuidando que no hierva).\n4. Agregar la cáscara de los limones rallada y el kirsch. Dejar enfriar.\n5. Mientras tanto batir la crema espesa y las claras a nieve.\n6. Incorporar todo suavemente y poner a helar."
+        },
+        {
+            id: 11,
+            title: "Sabayón Helado",
+            category: "Dulce",
+            containsGluten: false,
+            imgFile: "IMG_20251202_134951020_AE.jpg",
+            ingredients: [
+                { qty: 6, unit: "u", name: "Yemas" },
+                { qty: 150, unit: "gr", name: "Azúcar" },
+                { qty: 1, unit: "taza", name: "Vino blanco (o Marsala)" },
+                { qty: 1, unit: "cda", name: "Cáscara rallada de limón" },
+                { qty: 1, unit: "puñado", name: "Nueces picadas (opcional)" }
+            ],
+            instructions: "1. Batir las yemas con el azúcar en un bol apto para baño María.\n2. Agregar el vino y seguir batiendo hasta mezclar bien.\n3. Llevar a baño María suave (hirviendo suavemente) sin dejar de batir.\n4. Batir hasta que se forme una crema espumosa y consistente.\n5. Añadir a gusto la cáscara rallada y las nueces. Enfriar."
+        },
+        {
+            id: 12,
+            title: "Pan de Cebollas",
+            category: "Salado",
+            containsGluten: true,
+            imgFile: "IMG_20251202_134908169_AE.jpg",
+            ingredients: [
+                { qty: 500, unit: "gr", name: "Cebollas cortadas en aros" },
+                { qty: 1, unit: "cant.", name: "Aceite" },
+                { qty: 1, unit: "cdita", name: "Sal" },
+                { qty: 1, unit: "pizca", name: "Pimienta y Azúcar" },
+                { qty: 1, unit: "taza", name: "Queso rallado" },
+                { qty: 3, unit: "u", name: "Huevos" },
+                { qty: 1, unit: "taza", name: "Leche" },
+                { qty: 300, unit: "gr", name: "Harina tamizada" },
+                { qty: 4, unit: "cditas", name: "Polvo Royal" },
+                { qty: 1, unit: "taza", name: "Queso mantecoso y Orégano" }
+            ],
+            instructions: "1. Cocinar las cebollas en aceite sin dejar que se doren, solo transparentes. Escurrirlas y ponerlas en un tazón.\n2. Sazonar con sal, pimienta y azúcar.\n3. Agregar el queso rallado, los huevos batidos, la leche y poco a poco la harina tamizada con el polvo de hornear.\n4. Mezclar bien los ingredientes.\n5. Volcar en asadera aceitada y cocinar en horno caliente.\n6. Cuando esté casi cocido, esparcir queso mantecoso, orégano y rociar con aceite. Horno unos mins hasta que derrita."
+        },
+        {
+            id: 13,
+            title: "Torta de Manzana (Patricia)",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_134915011_AE.jpg",
+            ingredients: [
+                { qty: 2, unit: "tazas", name: "Harina" },
+                { qty: 1, unit: "taza", name: "Azúcar" },
+                { qty: 100, unit: "gr", name: "Margarina o Manteca" },
+                { qty: 2, unit: "cditas", name: "Polvo de hornear" },
+                { qty: 2, unit: "u", name: "Manzanas en rodajas finas" },
+                { qty: 2, unit: "u", name: "Huevos (cobertura)" },
+                { qty: 1, unit: "taza", name: "Leche (cobertura)" },
+                { qty: 1, unit: "chorrito", name: "Vainilla" },
+                { qty: 7, unit: "cdas", name: "Azúcar (para espolvorear)" }
+            ],
+            instructions: "1. Trabajar harina, azúcar, manteca y polvo de hornear con las manos hasta lograr un arenado (mezclar bien manteca con harina).\n2. Separar en dos partes. Colocar la mitad en un molde enmantecado y enharinado.\n3. Encima repartir las rodajas de manzanas finas. Poner encima la otra mitad de la preparación (arenado).\n4. Luego batir los 2 huevos con la taza de leche y vainilla.\n5. Rociar la torta con este líquido y espolvorear con las cucharadas de azúcar.\n6. Horno caliente hasta que se dore bien."
+        },
+        {
+            id: 14,
+            title: "Morrones en Conserva",
+            category: "Salado",
+            containsGluten: false,
+            imgFile: "IMG_20251202_134922646_AE.jpg",
+            ingredients: [
+                { qty: 3, unit: "kg", name: "Morrones colorados" },
+                { qty: 1, unit: "litro", name: "Vinagre" },
+                { qty: 1, unit: "taza", name: "Aceite" },
+                { qty: 200, unit: "gr", name: "Azúcar" },
+                { qty: 1, unit: "puñado", name: "Sal gruesa" }
+            ],
+            instructions: "1. Cortar los ajíes en tiritas y ponerlos en un lienzo con sal gruesa unas horas (para que suelten líquido).\n2. Luego escurrirlos.\n3. Cocinarlos con los demás ingredientes (vinagre, aceite, azúcar) durante 10 minutos de hervor.\n4. Guardarlos en frascos cubiertos con su propio jugo."
+        },
+        {
+            id: 15,
+            title: "Pollo a la Rionegrina",
+            category: "Salado",
+            containsGluten: false,
+            imgFile: "IMG_20251202_134956096_AE.jpg",
+            ingredients: [
+                { qty: 1, unit: "pollo", name: "Pollo en presas" },
+                { qty: 1, unit: "cda", name: "Margarina" },
+                { qty: 0.5, unit: "taza", name: "Caldo" },
+                { qty: 1, unit: "kg", name: "Manzanas verdes (s/cáscara en cuartos)" },
+                { qty: 200, unit: "gr", name: "Ciruelas secas" },
+                { qty: 1, unit: "cda", name: "Paté de foie" },
+                { qty: 1, unit: "cdita", name: "Curry (disuelto en caldo)" }
+            ],
+            instructions: "1. Freír las presas en margarina sin salar. Retirar y desgrasar el exceso de grasa.\n2. Agregar 1/2 pocillo de caldo, volver a colocar el pollo y salpimentar.\n3. Colocar las manzanas verdes en cuartos (cuidando que no toquen el fondo) y las ciruelas secas.\n4. Tapar y cocinar media hora.\n5. Completar la cocción agregando el paté y el curry disuelto en media taza de caldo.\n6. Dejar media hora más a fuego suave."
+        },
+        {
+            id: 16,
+            title: "Alfajor Provinciano",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_134956096_AE.jpg",
+            ingredients: [
+                { qty: 400, unit: "gr", name: "Harina Leudante" },
+                { qty: 6, unit: "u", name: "Yemas" },
+                { qty: 1, unit: "u", name: "Huevo entero" },
+                { qty: 2, unit: "cdas", name: "Azúcar" },
+                { qty: 50, unit: "gr", name: "Manteca" },
+                { qty: 1, unit: "pote", name: "Dulce de Leche (para rellenar)" }
+            ],
+            instructions: "1. Unir todos los ingredientes formando una masa tierna.\n2. Estirar la masa y cortar medallones del tamaño deseado.\n3. Cocinar en horno moderado hasta que estén apenas dorados.\n4. Una vez fríos, unir de a dos con dulce de leche."
+        },
+        {
+            id: 17,
+            title: "Masitas de Maní",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_135152125_AE.jpg",
+            ingredients: [
+                { qty: 150, unit: "gr", name: "Manteca" },
+                { qty: 600, unit: "gr", name: "Harina (Blancaflor)" },
+                { qty: 200, unit: "gr", name: "Azúcar" },
+                { qty: 3, unit: "u", name: "Huevos" },
+                { qty: 0.5, unit: "taza", name: "Leche" },
+                { qty: 1, unit: "chorrito", name: "Esencia de Vainilla" },
+                { qty: 1, unit: "tacita", name: "Maní picado" }
+            ],
+            instructions: "1. Unir la manteca a la harina.\n2. Aparte, mezclar el azúcar con los huevos, la leche y la vainilla.\n3. Agregar esta mezcla líquida a la harina y manteca ya unidas.\n4. Cuando se empieza a amasar, agregar el maní picado.\n5. Estirar con palote bien fina y cortar con ruleta o cortapastas."
+        },
+        {
+            id: 18,
+            title: "Coquitos",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_135152125_AE.jpg",
+            ingredients: [
+                { qty: 4, unit: "u", name: "Huevos" },
+                { qty: 120, unit: "gr", name: "Azúcar molida" },
+                { qty: 0.5, unit: "u", name: "Limón (ralladura)" },
+                { qty: 300, unit: "gr", name: "Coco rallado" },
+                { qty: 80, unit: "gr", name: "Harina" },
+                { qty: 160, unit: "gr", name: "Manteca derretida" }
+            ],
+            instructions: "1. Batir los huevos con el azúcar.\n2. Agregar la ralladura de limón y el coco rallado.\n3. Incorporar la harina y la manteca derretida.\n4. Mezclar todo bien y colocar por cucharadas en placa enmantecada. Cocinar en horno hasta dorar."
+        },
+        {
+            id: 19,
+            title: "Alfajor Rogel",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_135003356_AE.jpg",
+            ingredients: [
+                { qty: 1, unit: "copita", name: "Alcohol fino" },
+                { qty: 2, unit: "cdas", name: "Agua" },
+                { qty: 1, unit: "cant.", name: "Harina (aprox 300g-400g)" },
+                { qty: 6, unit: "u", name: "Yemas" },
+                { qty: 1, unit: "u", name: "Huevo entero" },
+                { qty: 1, unit: "cda", name: "Azúcar" },
+                { qty: 50, unit: "gr", name: "Manteca" },
+                { qty: 500, unit: "gr", name: "Dulce de Leche" },
+                { qty: 1, unit: "cant.", name: "Merengue cocido (para cubrir)" }
+            ],
+            instructions: "1. Poner en forma de corona la harina. En el centro: yemas, huevo, azúcar, manteca, alcohol y agua.\n2. Unir bien y amasar. Dejar descansar 40 minutos.\n3. Hacer 8 o 10 bollitos.\n4. Estirar por separado lo más fino posible y cortar discos grandes.\n5. Pincharlos con un tenedor y cocinar en horno caliente (se cocinan muy rápido).\n6. Apenas retirados, pegarlos uno sobre otro con abundante dulce de leche y cubrir todo con merengue."
+        },
+        {
+            id: 20,
+            title: "Tarta de Choclos",
+            category: "Salado",
+            containsGluten: true,
+            imgFile: "IMG_20251202_135022331_AE.jpg",
+            ingredients: [
+                { qty: 250, unit: "gr", name: "Harina (Blancaflor)" },
+                { qty: 100, unit: "gr", name: "Manteca" },
+                { qty: 1, unit: "u", name: "Huevo (masa)" },
+                { qty: 4, unit: "cdas", name: "Agua fría" },
+                { qty: 5, unit: "u", name: "Cebollas picadas y hervidas" },
+                { qty: 1, unit: "tarro", name: "Choclo en grano" },
+                { qty: 2, unit: "cdas", name: "Queso rallado" },
+                { qty: 200, unit: "gr", name: "Crema de leche" },
+                { qty: 2, unit: "u", name: "Huevos (relleno)" }
+            ],
+            instructions: "1. Masa: Unir harina, manteca, huevo y agua fría. Amasar y enfriar en heladera 30 min.\n2. Relleno: Freír las cebollas (previamente hervidas) con manteca. Agregar el choclo, 1 huevo, queso rallado, sal, pimienta y nuez moscada.\n3. Aparte batir la crema de leche con 2 huevos.\n4. Poner el relleno sobre la masa en tartera y volcar encima la crema batida.\n5. Horno aprox 30 minutos."
+        },
+        {
+            id: 21,
+            title: "Torta de Ricota",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_135007825_AE.jpg",
+            ingredients: [
+                { qty: 240, unit: "gr", name: "Harina (2 tazas)" },
+                { qty: 4, unit: "cditas", name: "Polvo Royal" },
+                { qty: 100, unit: "gr", name: "Azúcar (masa)" },
+                { qty: 125, unit: "gr", name: "Manteca" },
+                { qty: 1, unit: "u", name: "Huevo + 1 yema" },
+                { qty: 2, unit: "cditas", name: "Leche" },
+                { qty: 500, unit: "gr", name: "Ricota" },
+                { qty: 150, unit: "gr", name: "Azúcar (relleno)" },
+                { qty: 2, unit: "u", name: "Yemas (relleno)" },
+                { qty: 1, unit: "cdita", name: "Vainilla y Ralladura Limón" }
+            ],
+            instructions: "1. Tamizar harina, royal y azúcar. Agregar manteca mezclando con tenedor (arenado). Añadir huevo, yema y leche. Amasar ligeramente y dejar descansar.\n2. Relleno: Tamizar la ricota. Mezclar con azúcar, manteca (20g), yemas, vainilla y limón.\n3. Estirar la masa (dejar 1/2 cm espesor). Forrar molde. Verter relleno.\n4. Cubrir con la otra parte de la masa. Pintar con huevo.\n5. Horno caliente durante 25 minutos. Espolvorear con azúcar impalpable."
+        },
+        {
+            id: 22,
+            title: "Peceto con Miel",
+            category: "Salado",
+            containsGluten: true,
+            imgFile: "IMG_20251202_135032153_AE.jpg",
+            ingredients: [
+                { qty: 1.5, unit: "kg", name: "Peceto" },
+                { qty: 3, unit: "cdas", name: "Harina" },
+                { qty: 750, unit: "ml", name: "Agua hirviendo" },
+                { qty: 8, unit: "u", name: "Zanahorias" },
+                { qty: 3, unit: "u", name: "Batatas" },
+                { qty: 100, unit: "gr", name: "Miel" },
+                { qty: 200, unit: "gr", name: "Ciruelas secas" },
+                { qty: 30, unit: "gr", name: "Manteca y Aceite" }
+            ],
+            instructions: "1. Frotar la carne con sal y pimienta. Dorarla en aceite y manteca.\n2. Retirar la carne, echar la harina en el fondo de cocción, revolver y agregar el agua hirviendo.\n3. Volver a acomodar la carne. Agregar zanahorias, batatas y ciruelas en trozos.\n4. Verter la miel. Salpimentar a gusto.\n5. Cocinar con cacerola tapada durante 1 hora y media aprox. Servir en rodajas."
+        },
+        {
+            id: 23,
+            title: "Bombas (Profiteroles)",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_135046135_AE.jpg",
+            ingredients: [
+                { qty: 1, unit: "taza", name: "Agua (o leche)" },
+                { qty: 200, unit: "gr", name: "Manteca" },
+                { qty: 2, unit: "tacitas", name: "Harina" },
+                { qty: 8, unit: "u", name: "Huevos" }
+            ],
+            instructions: "1. Poner al fuego el agua con la manteca.\n2. Cuando la manteca esté derretida y hierva, agregar de golpe la harina.\n3. Revolver durante 5 minutos con cuchara de madera (se cocina la masa).\n4. Retirar del fuego. Cuando esté tibia, agregar de a uno los huevos, batiendo bien tras cada adición.\n5. Colocar sobre chapa enmantecada con manga o por cucharaditas.\n6. Horno bien caliente al principio hasta inflar, luego bajar para secar."
+        },
+        {
+            id: 24,
+            title: "Turrón de Quaker (con Criollitas)",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_135144035_AE.jpg",
+            ingredients: [
+                { qty: 200, unit: "gr", name: "Manteca" },
+                { qty: 240, unit: "gr", name: "Azúcar" },
+                { qty: 4, unit: "cdas", name: "Leche" },
+                { qty: 3, unit: "tazas", name: "Avena Quaker" },
+                { qty: 3, unit: "cdas", name: "Chocolate rallado o Cacao" },
+                { qty: 2, unit: "paq", name: "Galletitas Criollitas" }
+            ],
+            instructions: "1. Colocar al fuego la manteca, el azúcar, la leche y el chocolate.\n2. Revolver y cocinar 5 minutos.\n3. Agregar la avena y mezclar bien.\n4. En un molde, poner una capa (camada) de galletitas Criollitas, una de la preparación caliente, otra de galletitas, y así sucesivamente.\n5. Terminar con azúcar impalpable o chocolate. Llevar a frío."
+        },
+        {
+            id: 25,
+            title: "Brownies",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_135223918_AE.jpg",
+            ingredients: [
+                { qty: 5, unit: "u", name: "Huevos" },
+                { qty: 200, unit: "gr", name: "Azúcar" },
+                { qty: 100, unit: "gr", name: "Cacao" },
+                { qty: 5, unit: "cdas", name: "Agua" },
+                { qty: 100, unit: "gr", name: "Manteca" },
+                { qty: 200, unit: "gr", name: "Harina Leudante" },
+                { qty: 1, unit: "cdita", name: "Esencia vainilla o licor" },
+                { qty: 1, unit: "cant.", name: "Trocitos chocolate y nueces" }
+            ],
+            instructions: "1. Batir los 5 huevos con el azúcar.\n2. Agregar el cacao disuelto en las 5 cucharadas de agua y la manteca blanda.\n3. Incorporar la harina leudante tamizada.\n4. Perfumar con esencia o licor.\n5. Enmantecar un molde, poner la mitad de la preparación, sembrar trocitos de chocolate y nueces.\n6. Cubrir con el resto de la mezcla y más trocitos. Cocinar en horno moderado."
+        },
+        {
+            id: 26,
+            title: "Lemon Pie (Lilian)",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_135212890_AE.jpg",
+            ingredients: [
+                { qty: 100, unit: "gr", name: "Manteca (Masa)" },
+                { qty: 80, unit: "gr", name: "Azúcar (Masa)" },
+                { qty: 1, unit: "u", name: "Yema + 1 Huevo (Masa)" },
+                { qty: 200, unit: "gr", name: "Harina Leudante" },
+                { qty: 1.5, unit: "tazas", name: "Agua (Crema)" },
+                { qty: 1, unit: "taza", name: "Azúcar (Crema)" },
+                { qty: 2, unit: "u", name: "Limones (Jugo y Ralladura)" },
+                { qty: 2, unit: "u", name: "Yemas (Crema)" },
+                { qty: 4, unit: "cdas", name: "Maizena" }
+            ],
+            instructions: "1. Masa: Mezclar manteca, azúcar, huevo y yema. Unir sin amasar con la harina. Enfriar 15 mins y forrar molde.\n2. Crema: Hervir el agua con azúcar y ralladura unos minutos.\n3. Mezclar el jugo de limón con las yemas y la maizena. Volcar sobre el agua caliente y espesar revolviendo.\n4. Armado: Colocar la crema sobre la masa cruda en el molde.\n5. Cocinar a horno moderado.\n6. Cubrir con merengue (3 cdas azúcar por clara) cuando esté casi cocido y dorar."
+        },
+        {
+            id: 27,
+            title: "Torta Gabriel",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_135230104_AE.jpg",
+            ingredients: [
+                { qty: 200, unit: "gr", name: "Manteca" },
+                { qty: 200, unit: "gr", name: "Azúcar" },
+                { qty: 6, unit: "u", name: "Yemas" },
+                { qty: 3, unit: "barritas", name: "Chocolate (disueltas en leche)" },
+                { qty: 250, unit: "gr", name: "Nueces" },
+                { qty: 3, unit: "u", name: "Manzanas verdes (cubitos)" },
+                { qty: 250, unit: "gr", name: "Bay-Biscuit molido" },
+                { qty: 3, unit: "cditas", name: "Polvo Royal" },
+                { qty: 6, unit: "u", name: "Claras a nieve" }
+            ],
+            instructions: "1. Batir la manteca con el azúcar y las yemas.\n2. Agregar el chocolate disuelto en leche.\n3. Incorporar las nueces, las manzanas, el bay-biscuit molido y el polvo de hornear.\n4. Por último, mezclar suavemente las claras batidas a nieve.\n5. Cocinar en horno moderado."
+        },
+        {
+            id: 28,
+            title: "Budín de Zapallo",
+            category: "Dulce",
+            containsGluten: false,
+            imgFile: "IMG_20251202_135240995_AE.jpg",
+            ingredients: [
+                { qty: 1, unit: "kg", name: "Zapallo Calabaza" },
+                { qty: 1, unit: "taza", name: "Agua" },
+                { qty: 4, unit: "u", name: "Huevos" },
+                { qty: 250, unit: "gr", name: "Azúcar" }
+            ],
+            instructions: "1. Hervir el zapallo, colar y hacer puré.\n2. Con el agua y el azúcar hacer un almíbar liviano.\n3. Mezclar el puré de zapallo con el almíbar y los huevos.\n4. Poner en budinera acaramelada.\n5. Cocinar a baño María."
+        },
+        {
+            id: 29,
+            title: "Torta de Olga (masitas)",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_135208628_AE.jpg",
+            ingredients: [
+                { qty: 150, unit: "gr", name: "Manteca" },
+                { qty: 200, unit: "gr", name: "Harina Blancaflor" },
+                { qty: 1, unit: "u", name: "Huevo + 1 Yema" },
+                { qty: 1, unit: "cant.", name: "Dulce de Leche" },
+                { qty: 300, unit: "gr", name: "Azúcar (cubierta)" },
+                { qty: 100, unit: "gr", name: "Coco (cubierta)" },
+                { qty: 2, unit: "u", name: "Huevos + 1 clara (cubierta)" }
+            ],
+            instructions: "1. Hacer una masa frola con manteca, harina y huevos. Forrar el molde.\n2. Colocar sobre la masa cruda una capa generosa de dulce de leche.\n3. Cubierta: Batir bien el azúcar con el coco y los huevos/clara.\n4. Colocar esta preparación sobre el dulce.\n5. Hornear todo junto."
+        },
+        {
+            id: 30,
+            title: "Budín de Coco",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_135200158_AE.jpg",
+            ingredients: [
+                { qty: 200, unit: "gr", name: "Masitas de coco" },
+                { qty: 100, unit: "gr", name: "Coco rallado" },
+                { qty: 1, unit: "lata", name: "Leche Condensada" },
+                { qty: 4, unit: "u", name: "Huevos" },
+                { qty: 1, unit: "cdita", name: "Vainilla" }
+            ],
+            instructions: "1. Licuar los biscochos/masitas con los huevos y la leche condensada.\n2. Agregarles la esencia y el coco rallado.\n3. Colocar la preparación en una budinera acaramelada.\n4. Cocinar en horno suave a baño María por 45 minutos."
+        },
+        {
+            id: 31,
+            title: "Postre Leche Condensada",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_135200158_AE.jpg",
+            ingredients: [
+                { qty: 1, unit: "lata", name: "Leche Condensada" },
+                { qty: 2, unit: "u", name: "Huevos (por cada lata)" },
+                { qty: 1, unit: "paq", name: "Bizcochos Canale (Vainillas)" },
+                { qty: 1, unit: "copita", name: "Cognac" },
+                { qty: 1, unit: "puñado", name: "Nueces" }
+            ],
+            instructions: "1. Acaramelar un molde y cubrirlo con los bizcochos mojados en cognac.\n2. Colocarle nueces.\n3. Batir los huevos con la leche condensada y volcar esta mezcla sobre los bizcochos.\n4. Cocinar a baño María."
+        },
+        {
+            id: 32,
+            title: "Bizcochuelo (Agua Hirviendo)",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_135254815_AE.jpg",
+            ingredients: [
+                { qty: 9, unit: "u", name: "Huevos" },
+                { qty: 375, unit: "gr", name: "Azúcar" },
+                { qty: 225, unit: "gr", name: "Harina" },
+                { qty: 2, unit: "cditas", name: "Polvo Royal" },
+                { qty: 4, unit: "cdas", name: "Agua hirviendo" }
+            ],
+            instructions: "1. Batir las claras a punto nieve firme.\n2. Agregar el azúcar y seguir batiendo.\n3. Agregar las yemas de a una.\n4. Incorporar el agua hirviendo.\n5. Finalmente la harina tamizada con el royal, suavemente.\n6. Cocinar en horno suave."
+        },
+        {
+            id: 33,
+            title: "Dulce de Pomelo",
+            category: "Dulce",
+            containsGluten: false,
+            imgFile: "IMG_20251202_135254815_AE.jpg",
+            ingredients: [
+                { qty: 2, unit: "u", name: "Pomelos (cáscara)" },
+                { qty: 1, unit: "pizca", name: "Sal" },
+                { qty: 1.5, unit: "lt", name: "Agua (Almíbar)" },
+                { qty: 1.25, unit: "kg", name: "Azúcar (Almíbar)" }
+            ],
+            instructions: "1. Cortar cáscaras en cuartos, poner en agua y sal toda la noche.\n2. Lavar bien. Hervir 10 minutos, cambiar el agua por otra caliente. Repetir 3 veces hasta que estén tiernas.\n3. Hacer un almíbar con el agua y azúcar.\n4. Colocar las cáscaras escurridas y dejar hervir hasta que tome punto."
+        },
+        {
+            id: 34,
+            title: "Torta de Arroz",
+            category: "Salado",
+            containsGluten: true,
+            imgFile: "IMG_20251202_135321107_AE.jpg",
+            ingredients: [
+                { qty: 4, unit: "tazas", name: "Arroz cocido (Gallo común)" },
+                { qty: 500, unit: "gr", name: "Ajo porro (puerro)" },
+                { qty: 500, unit: "gr", name: "Cebolla de verdeo" },
+                { qty: 6, unit: "u", name: "Huevos" },
+                { qty: 1, unit: "taza", name: "Queso rallado" },
+                // Masa
+                { qty: 2, unit: "tazas", name: "Harina común" },
+                { qty: 2, unit: "cdas", name: "Aceite" }
+            ],
+            instructions: "1. Masa: Unir las 2 tazas de harina con 1 huevo y 2 cucharadas de aceite. Estirar y forrar tartera.\n2. Relleno: Mezclar el arroz cocido con el ajo porro y la cebolla de verdeo rehogados.\n3. Agregar 5 huevos (1 se usó en masa), el queso rallado, sal y pimienta.\n4. Rellenar la tarta y cocinar en horno."
+        },
+        {
+            id: 35,
+            title: "Tarta de Pollo (con Canela)",
+            category: "Salado",
+            containsGluten: true,
+            imgFile: "IMG_20251202_135350148_AE.jpg",
+            ingredients: [
+                { qty: 1, unit: "pizca", name: "Canela (secreto masa)" },
+                { qty: 200, unit: "gr", name: "Margarina o Manteca" },
+                { qty: 300, unit: "gr", name: "Harina" },
+                { qty: 1, unit: "u", name: "Huevo (masa)" },
+                { qty: 1, unit: "u", name: "Pollo cocido cortadito" },
+                { qty: 1, unit: "u", name: "Cebolla y Morrón" },
+                { qty: 1, unit: "taza", name: "Salsa Blanca con Choclo" },
+                { qty: 1, unit: "cdita", name: "Pimentón" }
+            ],
+            instructions: "1. Masa: Unir margarina, harina, huevo, un poco de agua y la pizca de canela. Forrar molde.\n2. Relleno: Saltear cebolla y morrón. Mezclar con el pollo y la salsa blanca con choclo.\n3. Condimentar con queso rallado y pimentón.\n4. Rellenar la tarta (sin tapa, destapada) y cocinar en horno."
+        },
+        {
+            id: 36,
+            title: "Tiramisú (Nini)",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_135331972_AE.jpg",
+            ingredients: [
+                { qty: 700, unit: "gr", name: "Queso Mascarpone o Cremón" },
+                { qty: 500, unit: "gr", name: "Crema de leche" },
+                { qty: 1, unit: "taza", name: "Café fuerte" },
+                { qty: 1, unit: "copita", name: "Licor de café" },
+                { qty: 70, unit: "gr", name: "Azúcar impalpable" },
+                { qty: 36, unit: "u", name: "Vainillas (bizcochos)" },
+                { qty: 1, unit: "barra", name: "Chocolate para rallar" }
+            ],
+            instructions: "1. Batir los quesos con la mitad del azúcar impalpable.\n2. Agregar un chorrito de café.\n3. Aparte batir la crema con el resto del azúcar y esencia.\n4. Incorporar la crema a la preparación de queso.\n5. Mojar apenas las vainillas en café fuerte dulce con licor.\n6. Alternar capas de vainillas y crema en fuente. Terminar con chocolate rallado."
+        },
+        {
+            id: 37,
+            title: "Galletitas de Avena",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_135314992_AE.jpg",
+            ingredients: [
+                { qty: 3, unit: "u", name: "Huevos" },
+                { qty: 0.75, unit: "taza", name: "Aceite" },
+                { qty: 0.5, unit: "taza", name: "Azúcar" },
+                { qty: 2, unit: "tazas", name: "Harina común con Royal" },
+                { qty: 2, unit: "tazas", name: "Avena (o 1 avena y 1 granola)" },
+                { qty: 1, unit: "cant.", name: "Nueces, Chocolate, Coco, Limón" }
+            ],
+            instructions: "1. Batir huevos con azúcar y aceite.\n2. Perfumar con ralladura de limón y vainilla.\n3. Agregar la harina tamizada con polvo de hornear y la avena.\n4. Incorporar los 'variantes' a gusto: trocitos de chocolate, nueces picadas o coco.\n5. Formar galletitas y hornear hasta dorar."
+        },
+        {
+            id: 38,
+            title: "Flan con Leche Condensada",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_135309031_AE.jpg",
+            ingredients: [
+                { qty: 1, unit: "lata", name: "Leche Condensada" },
+                { qty: 2, unit: "medidas", name: "Leche común (usar lata)" },
+                { qty: 5, unit: "u", name: "Huevos" },
+                { qty: 50, unit: "gr", name: "Nueces molidas" },
+                { qty: 1, unit: "taza", name: "Bizcochos dulces molidos (tipo Canale)" }
+            ],
+            instructions: "1. Colocar la leche condensada en un bol. Agregar las 2 medidas de leche común.\n2. Incorporar los huevos, las nueces y los bizcochos molidos.\n3. Colocar en flanera acaramelada.\n4. Cocinar a baño María en horno moderado aprox 50 minutos.\n5. Desmoldar frío y decorar con crema o cerezas."
+        },
+        {
+            id: 39,
+            title: "Crema Gitana",
+            category: "Dulce",
+            containsGluten: false,
+            imgFile: "IMG_20251202_135350148_AE.jpg",
+            ingredients: [
+                { qty: 200, unit: "gr", name: "Manteca" },
+                { qty: 200, unit: "gr", name: "Azúcar Impalpable" },
+                { qty: 3, unit: "cdas", name: "Chocolate en polvo" },
+                { qty: 1, unit: "copita", name: "Coñac" },
+                { qty: 100, unit: "gr", name: "Nueces picadas" },
+                { qty: 2, unit: "cdas", name: "Dulce de Leche" }
+            ],
+            instructions: "1. Batir la manteca pomada con el azúcar impalpable hasta lograr una crema.\n2. Agregar el chocolate en polvo y el dulce de leche.\n3. Perfumar con el coñac.\n4. Incorporar las nueces.\n5. Servir en copas y llevar a heladera (es un postre muy rico y fuerte)."
+        },
+        {
+            id: 40,
+            title: "Torta de Manzana y Azúcar Negra",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_135233912_AE.jpg",
+            ingredients: [
+                { qty: 12, unit: "cdas", name: "Harina Leudante" },
+                { qty: 10, unit: "cdas", name: "Azúcar" },
+                { qty: 100, unit: "gr", name: "Manteca" },
+                { qty: 3, unit: "u", name: "Huevos" },
+                { qty: 4, unit: "u", name: "Manzanas" },
+                { qty: 1, unit: "taza", name: "Azúcar Negra" }
+            ],
+            instructions: "1. Deshacer la manteca con la harina y el azúcar (arenado).\n2. Agregar los huevos batidos y unir.\n3. Colocar en asadera enmantecada.\n4. Cubrir con las manzanas en rodajas.\n5. Espolvorear con abundante azúcar negra y trocitos de manteca. Hornear."
+        },
+        {
+            id: 41,
+            title: "Pirotines (Muffins)",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_135219547_AE.jpg",
+            ingredients: [
+                { qty: 200, unit: "gr", name: "Manteca" },
+                { qty: 200, unit: "gr", name: "Azúcar" },
+                { qty: 3, unit: "u", name: "Huevos" },
+                { qty: 200, unit: "gr", name: "Harina" },
+                { qty: 1, unit: "cdita", name: "Polvo Royal" },
+                { qty: 1, unit: "cdita", name: "Vainilla" }
+            ],
+            instructions: "1. Batir como la torta de manteca (cremar manteca y azúcar, agregar huevos, luego secos).\n2. Llenar los pirotines hasta la mitad.\n3. Horno moderado.\n4. Opcional: se pueden emborrachar o poner un pedacito de dulce de membrillo o chocolate en el centro."
+        },
+        {
+            id: 42,
+            title: "Crema de Limón",
+            category: "Dulce",
+            containsGluten: false,
+            imgFile: "IMG_20251202_135404334_AE.jpg",
+            ingredients: [
+                { qty: 0.5, unit: "litro", name: "Agua" },
+                { qty: 6, unit: "cdas", name: "Maizena" },
+                { qty: 200, unit: "gr", name: "Azúcar" },
+                { qty: 60, unit: "gr", name: "Manteca" },
+                { qty: 3, unit: "u", name: "Yemas" },
+                { qty: 2, unit: "u", name: "Limones (Jugo y Ralladura)" }
+            ],
+            instructions: "1. Colocar en una olla el agua fría, la maizena, el azúcar y la ralladura.\n2. Mezclar bien y llevar al fuego.\n3. Cocinar revolviendo con cuchara de madera hasta que hierva y espese.\n4. Retirar, agregar la manteca, las yemas y el jugo. Mezclar enérgicamente."
+        },
+        {
+            id: 43,
+            title: "Tarta Galera",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_135338799_AE.jpg",
+            ingredients: [
+                { qty: 100, unit: "gr", name: "Manteca" },
+                { qty: 100, unit: "gr", name: "Azúcar" },
+                { qty: 1, unit: "taza", name: "Ciruelas negras (remojadas en té)" },
+                { qty: 1, unit: "taza", name: "Nueces picadas" },
+                { qty: 3, unit: "u", name: "Huevos (separados)" },
+                { qty: 3, unit: "cdas", name: "Harina" },
+                { qty: 1, unit: "taza", name: "Agua hirviendo" }
+            ],
+            instructions: "1. Colocar en un bol: la manteca, el agua hirviendo, las nueces, ciruelas y azúcar. Dejar macerar 1/2 hora.\n2. Agregar las yemas batidas.\n3. Incorporar las 3 cucharadas de harina leudante.\n4. Por último, las claras a nieve.\n5. Hornear suavemente."
+        },
+        {
+            id: 44,
+            title: "Torta Galesa (Para Nini)",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_135545624_MF_PORTRAIT.jpg",
+            ingredients: [
+                { qty: 2, unit: "tazas", name: "Harina Leudante (grandes)" },
+                { qty: 1, unit: "taza", name: "Azúcar" },
+                { qty: 200, unit: "gr", name: "Manteca" },
+                { qty: 150, unit: "gr", name: "Nueces" },
+                { qty: 250, unit: "gr", name: "Pasas de uva" },
+                { qty: 250, unit: "gr", name: "Ciruelas negras" },
+                { qty: 1.5, unit: "tazas", name: "Agua" },
+                { qty: 1, unit: "cdita", name: "Canela, Bicarbonato y Vainilla" }
+            ],
+            instructions: "1. Hervir las nueces con el agua. Dejar enfriar y NO tirar el agua.\n2. Mezclar el azúcar, la manteca en el bol y agregar huevos (si lleva, receta dice mezclar).\n3. Agregar la harina intercalando con el agua de las nueces (que tiene todo el sabor).\n4. Agregar las nueces, pasas y ciruelas, el bicarbonato y canela.\n5. Cocinar en horno MÍNIMO por 2 horas (revisar antes). Molde redondo o con tubo."
+        },
+        {
+            id: 45,
+            title: "Licor Tía María",
+            category: "Bebida",
+            containsGluten: false,
+            imgFile: "IMG_20251202_135529367_MF_PORTRAIT.jpg",
+            ingredients: [
+                { qty: 0.5, unit: "litro", name: "Agua" },
+                { qty: 250, unit: "gr", name: "Azúcar" },
+                { qty: 250, unit: "cc", name: "Alcohol fino (comestible)" },
+                { qty: 3, unit: "u", name: "Saquitos de Té" },
+                { qty: 4, unit: "cdas", name: "Café Soluble" },
+                { qty: 1, unit: "cda", name: "Esencia de Vainilla" }
+            ],
+            instructions: "1. Hervir el agua con el azúcar, el té y el café durante 15 minutos.\n2. Retirar del fuego y dejar enfriar.\n3. Una vez frío, agregar el alcohol y la esencia de vainilla.\n4. Dejar reposar 15 días antes de consumir."
+        },
+        {
+            id: 46,
+            title: "Albondigones con Arroz",
+            category: "Salado",
+            containsGluten: false,
+            imgFile: "IMG_20251202_135443511_AE.jpg",
+            ingredients: [
+                { qty: 500, unit: "gr", name: "Carne picada" },
+                { qty: 1, unit: "taza", name: "Arroz crudo" },
+                { qty: 1, unit: "u", name: "Huevo" },
+                { qty: 2, unit: "cdas", name: "Queso rallado" },
+                { qty: 3, unit: "u", name: "Tomates (para salsa)" },
+                { qty: 1, unit: "vaso", name: "Vermouth" },
+                { qty: 1, unit: "cda", name: "Albahaca y Ketchup" }
+            ],
+            instructions: "1. Mezclar la carne picada con el arroz crudo, huevo, queso y condimentos.\n2. Dar forma de albondigones grandes y acomodar en cacerola (sin superponer).\n3. Salsa: Licuar tomates, sal, pimienta, azúcar, vermouth, albahaca y ketchup.\n4. Verter sobre la carne. Cocinar a fuego lento tapado hasta que el arroz esté cocido. Agregar caldo si hace falta."
+        },
+        {
+            id: 47,
+            title: "Flan Relleno con Duraznos",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_135309031_AE.jpg",
+            ingredients: [
+                { qty: 1, unit: "paq", name: "Vainillas (bizcochos)" },
+                { qty: 1, unit: "lata", name: "Duraznos en almíbar" },
+                { qty: 6, unit: "u", name: "Huevos" },
+                { qty: 750, unit: "ml", name: "Leche" },
+                { qty: 125, unit: "gr", name: "Azúcar" },
+                { qty: 1, unit: "cdita", name: "Esencia de Vainilla" }
+            ],
+            instructions: "1. Acaramelar una budinera.\n2. Acomodar una base de vainillas rotas, encima duraznos en rodajas. Repetir hasta completar 3/4 partes.\n3. Preparar el flan mezclando huevos, leche, azúcar y esencia.\n4. Verter en la budinera y mover para que filtre hasta abajo.\n5. Cocinar a baño María en horno moderado 40 minutos."
+        },
+        {
+            id: 48,
+            title: "Cebollitas Glaseadas",
+            category: "Salado",
+            containsGluten: false,
+            imgFile: "IMG_20251202_135421465_AE.jpg",
+            ingredients: [
+                { qty: 2, unit: "kg", name: "Cebolla chiquita (para encurtir)" },
+                { qty: 1.5, unit: "taza", name: "Azúcar" },
+                { qty: 1, unit: "taza", name: "Vinagre Blanco" },
+                { qty: 1, unit: "cdita", name: "Semillas de Eneldo (o café)" }
+            ],
+            instructions: "1. Pelar las cebollitas, lavarlas y secarlas.\n2. Colocar en olla con el azúcar, el vinagre y las semillas.\n3. Hervir todo junto más o menos 1 hora y media hasta que estén tiernas y brillantes."
+        },
+        {
+            id: 49,
+            title: "Mermelada de Naranja",
+            category: "Dulce",
+            containsGluten: false,
+            imgFile: "IMG_20251202_135421465_AE.jpg",
+            ingredients: [
+                { qty: 4, unit: "u", name: "Naranjas (exprimidas y ralladas)" },
+                { qty: 2, unit: "u", name: "Limones (exprimidos y 1 rallado)" },
+                { qty: 4, unit: "litros", name: "Agua" },
+                { qty: 2, unit: "kg", name: "Azúcar" }
+            ],
+            instructions: "1. Colocar las cáscaras, jugos y el agua. Hervir.\n2. Agregar el azúcar.\n3. Cocinar todo junto hasta que tome punto mermelada (al poner una gotita en un plato frío, no se corre)."
+        },
+        {
+            id: 50,
+            title: "Salsa de Roquefort",
+            category: "Salado",
+            containsGluten: false,
+            imgFile: "IMG_20251202_135219547_AE.jpg",
+            ingredients: [
+                { qty: 1, unit: "trozo", name: "Queso Roquefort" },
+                { qty: 200, unit: "gr", name: "Crema de leche" },
+                { qty: 1, unit: "cda", name: "Ketchup" },
+                { qty: 1, unit: "puñado", name: "Nueces picadas" }
+            ],
+            instructions: "1. Pisar el roquefort.\n2. Mezclar con la crema de leche y el ketchup.\n3. Calentar suavemente o servir frío sobre pollo dorado.\n4. Espolvorear con nueces."
+        },
+        {
+            id: 51,
+            title: "Bizcochuelo de Gladis",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_135246905_AE.jpg",
+            ingredients: [
+                { qty: 6, unit: "u", name: "Huevos enteros" },
+                { qty: 10, unit: "cdas", name: "Azúcar" },
+                { qty: 10, unit: "cdas", name: "Harina Leudante" },
+                { qty: 1, unit: "cdita", name: "Vainilla o Limón" }
+            ],
+            instructions: "1. Batir los huevos con el azúcar y la esencia a 'punto letra' (bien espumoso).\n2. Retirar de la batidora.\n3. Unir las 10 cucharadas de harina suavemente con movimiento envolvente.\n4. Cocinar en horno mínimo (precalentado) para que suba parejo."
+        },
+        {
+            id: 52,
+            title: "Licor Cointreau Casero",
+            category: "Bebida",
+            containsGluten: false,
+            imgFile: "IMG_20251202_135617579_MF_PORTRAIT.jpg",
+            ingredients: [
+                { qty: 3, unit: "u", name: "Cáscaras de naranja" },
+                { qty: 200, unit: "gr", name: "Azúcar" },
+                { qty: 3, unit: "u", name: "Clavos de olor" },
+                { qty: 1, unit: "ramito", name: "Orégano (curioso pero real)" },
+                { qty: 2, unit: "granos", name: "Pimienta" },
+                { qty: 0.5, unit: "litro", name: "Agua" },
+                { qty: 250, unit: "cc", name: "Alcohol fino" }
+            ],
+            instructions: "1. Poner en el alcohol las cáscaras y especias. Dejar macerar 1 mes.\n2. Hacer un almíbar con el agua y el azúcar.\n3. Mezclar con el alcohol colado."
+        },
+        {
+            id: 53,
+            title: "Espuma de Chocolate",
+            category: "Dulce",
+            containsGluten: false,
+            imgFile: "IMG_20251202_135425672_AE.jpg",
+            ingredients: [
+                { qty: 6, unit: "barritas", name: "Chocolate" },
+                { qty: 100, unit: "gr", name: "Manteca" },
+                { qty: 8, unit: "u", name: "Claras a nieve" },
+                { qty: 6, unit: "cdas", name: "Azúcar molida" },
+                { qty: 400, unit: "gr", name: "Crema de leche" }
+            ],
+            instructions: "1. Disolver a baño María el chocolate con la manteca. Dejar enfriar.\n2. Batir las claras a punto nieve agregando de a poco el azúcar.\n3. Batir la crema chantilly.\n4. Unir el chocolate a las claras suavemente, y por último la crema.\n5. Enfriar en heladera."
+        },
+        {
+            id: 54,
+            title: "Budín Inglés",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_135415209_AE.jpg",
+            ingredients: [
+                { qty: 100, unit: "gr", name: "Manteca" },
+                { qty: 165, unit: "gr", name: "Azúcar" },
+                { qty: 3, unit: "u", name: "Huevos" },
+                { qty: 375, unit: "gr", name: "Harina" },
+                { qty: 6, unit: "cditas", name: "Polvo Royal" },
+                { qty: 0.75, unit: "taza", name: "Leche" },
+                { qty: 1, unit: "taza", name: "Frutas abrillantadas, pasas, nueces" },
+                { qty: 1, unit: "u", name: "Ralladura limón" }
+            ],
+            instructions: "1. Batir manteca con azúcar. Agregar huevos uno a uno.\n2. Tamizar harina y royal.\n3. Incorporar alternando con la leche.\n4. Agregar las frutas pasadas por harina.\n5. Hornear en budinera enmantecada 1 hora y media aprox."
+        },
+        {
+            id: 55,
+            title: "Galletitas Secas de Maíz",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_135304707_AE.jpg",
+            ingredients: [
+                { qty: 150, unit: "gr", name: "Harina" },
+                { qty: 100, unit: "gr", name: "Fécula de Maíz (Maizena)" },
+                { qty: 155, unit: "gr", name: "Manteca" },
+                { qty: 150, unit: "gr", name: "Azúcar impalpable" },
+                { qty: 1, unit: "u", name: "Huevo + 1 Yema" },
+                { qty: 1, unit: "cdita", name: "Vainilla y Limón" },
+                { qty: 150, unit: "gr", name: "Chocolate cobertura (decorar)" }
+            ],
+            instructions: "1. Tamizar harina, fécula y sal. Unir a la manteca.\n2. Agregar azúcar, huevo, yema y esencias. Unir sin amasar.\n3. Estirar fino, cortar con formas.\n4. Horno moderado. Al sacar, decorar con chocolate cobertura o dulce."
+        },
+        {
+            id: 56,
+            title: "Cassata Helada",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_135436932_AE.jpg",
+            ingredients: [
+                { qty: 18, unit: "u", name: "Vainillas" },
+                { qty: 1, unit: "taza", name: "Café azucarado" },
+                { qty: 1, unit: "paq", name: "Helado de Vainilla" },
+                { qty: 1, unit: "paq", name: "Helado de Chocolate" },
+                { qty: 1, unit: "paq", name: "Helado de Frutilla" }
+            ],
+            instructions: "1. Humedecer vainillas en café con licor. Forrar el fondo de un molde con papel y vainillas.\n2. Acomodar una capa de helado (ej. vainilla), congelar.\n3. Poner otra capa (chocolate), congelar.\n4. Terminar con frutilla. Desmoldar helado y decorar con chantilly."
+        },
+        {
+            id: 57,
+            title: "Tarta de Nueces y Coco Merengada",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_134856942_AE.jpg",
+            ingredients: [
+                { qty: 200, unit: "gr", name: "Harina (Masa)" },
+                { qty: 100, unit: "gr", name: "Manteca (Masa)" },
+                { qty: 75, unit: "gr", name: "Azúcar (Masa)" },
+                { qty: 1, unit: "u", name: "Yema (Masa)" },
+                { qty: 250, unit: "gr", name: "Nueces molidas (Relleno)" },
+                { qty: 150, unit: "gr", name: "Coco rallado (Relleno)" },
+                { qty: 400, unit: "gr", name: "Azúcar molida (Relleno)" },
+                { qty: 10, unit: "u", name: "Yemas (Relleno)" },
+                { qty: 4, unit: "u", name: "Claras a nieve (Relleno)" }
+            ],
+            instructions: "1. Masa: Unir ingredientes, forrar molde.\n2. Relleno: Unir manteca (150g) con azúcar, yemas, coco y nueces.\n3. Al final, incorporar las 4 claras a nieve.\n4. Volcar sobre la masa y cocinar a horno moderado."
+        },
+        {
+            id: 58,
+            title: "Crema de Ananá o Durazno",
+            category: "Dulce",
+            containsGluten: false,
+            imgFile: "IMG_20251202_135410396_AE.jpg",
+            ingredients: [
+                { qty: 3, unit: "u", name: "Huevos enteros" },
+                { qty: 2, unit: "u", name: "Yemas" },
+                { qty: 200, unit: "gr", name: "Azúcar" },
+                { qty: 3, unit: "cdas", name: "Harina (o maicena extra si es celíaco)" },
+                { qty: 500, unit: "ml", name: "Leche (1/2 L)" },
+                { qty: 500, unit: "ml", name: "Jugo de ananá o durazno" },
+                { qty: 3, unit: "cdas", name: "Maizena (además de la harina)" },
+                { qty: 1, unit: "taza", name: "Ananá o durazno cortadito" }
+            ],
+            instructions: "1. Colocar en cacerolita todos los ingredientes secos y los huevos. Unir muy bien.\n2. Agregar la leche y el jugo.\n3. Llevar al fuego hasta que espese revolviendo siempre.\n4. Retirar y seguir revolviendo hasta que se enfríe un poco."
+        },
+        {
+            id: 59,
+            title: "Crema de Oporto",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_135410396_AE.jpg",
+            ingredients: [
+                { qty: 3, unit: "u", name: "Yemas" },
+                { qty: 150, unit: "gr", name: "Azúcar molida" },
+                { qty: 1, unit: "taza", name: "Té con leche (o leche)" },
+                { qty: 1, unit: "cdita", name: "Vainilla" },
+                { qty: 8, unit: "cdas", name: "Harina" },
+                { qty: 3, unit: "cdas", name: "Maizena" },
+                { qty: 1, unit: "vaso", name: "Vino Oporto" }
+            ],
+            instructions: "1. Batir las yemas con el azúcar y la vainilla bien.\n2. Luego agregar la harina, la maizena y el oporto.\n3. Cocinar a fuego lento hasta que espese."
+        },
+        {
+            id: 60,
+            title: "Gateau de Chocolate (Sandra)",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_135400201_AE.jpg",
+            ingredients: [
+                { qty: 6, unit: "u", name: "Yemas" },
+                { qty: 6, unit: "u", name: "Claras" },
+                { qty: 225, unit: "gr", name: "Manteca" },
+                { qty: 375, unit: "gr", name: "Azúcar" },
+                { qty: 375, unit: "gr", name: "Harina" },
+                { qty: 150, unit: "gr", name: "Nueces?" },
+                { qty: 2, unit: "cdas", name: "Polvo Royal" },
+                { qty: 3, unit: "barritas", name: "Chocolate" },
+                { qty: 4, unit: "cdas", name: "Cacao" },
+                { qty: 6, unit: "cdas", name: "Leche" }
+            ],
+            instructions: "1. Batir bien cremosa la manteca con el azúcar.\n2. Agregar las yemas una a una batiendo bien.\n3. Luego agregar el chocolate derretido con la leche.\n4. Incorporar poco a poco la harina tamizada con el royal y cacao.\n5. Agregar las claras a nieve mezclando suavemente.\n6. Poner a helar (si es mousse) o cocinar en horno (si es torta - la receta dice Gateau, asumo horno)."
+        },
+        {
+            id: 61,
+            title: "Masa con Grasa (para Tarta)",
+            category: "Salado",
+            containsGluten: true,
+            imgFile: "IMG_20251202_134927087_AE.jpg",
+            ingredients: [
+                { qty: 500, unit: "gr", name: "Harina" },
+                { qty: 3, unit: "u", name: "Yemas" },
+                { qty: 2, unit: "cdas", name: "Grasa vacuna" },
+                { qty: 1, unit: "taza", name: "Agua tibia" }
+            ],
+            instructions: "1. Unir la harina con las yemas y la grasa.\n2. Ir agregando agua tibia hasta formar una masa.\n3. Ideal para tartas criollas o empanadas."
+        },
+        {
+            id: 62,
+            title: "Masa de Aceite (para Tarta)",
+            category: "Salado",
+            containsGluten: true,
+            imgFile: "IMG_20251202_134927087_AE.jpg",
+            ingredients: [
+                { qty: 0.5, unit: "pocillo", name: "Aceite" },
+                { qty: 1, unit: "chorrito", name: "Soda (agua con gas)" },
+                { qty: 1, unit: "cdita", name: "Sal" },
+                { qty: 1, unit: "cant.", name: "Harina (la que tome)" }
+            ],
+            instructions: "1. Mezclar el aceite, la soda y la sal.\n2. Ir agregando harina hasta que tome consistencia y cuerpo para estirar (que quede leudante)."
+        },
+        {
+            id: 63,
+            title: "Merengue Suizo",
+            category: "Dulce",
+            containsGluten: false,
+            imgFile: "IMG_20251202_134900647_AE.jpg",
+            ingredients: [
+                { qty: 3, unit: "cdas", name: "Azúcar (por cada clara)" },
+                { qty: 1, unit: "cdita", name: "Polvo Royal" },
+                { qty: 1, unit: "cdita", name: "Vinagre" },
+                { qty: 4, unit: "u", name: "Claras (ejemplo base)" }
+            ],
+            instructions: "1. Unir todo en un bol que pueda ir a baño María.\n2. Calentar revolviendo hasta que esté bien caliente.\n3. Retirar y batir con batidora enérgicamente hasta que se enfríe y haga picos firmes."
+        },
+        {
+            id: 64,
+            title: "Lemon Pie (con Condensada)",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_135208628_AE.jpg",
+            ingredients: [
+                { qty: 1, unit: "tapa", name: "Masa frola cocida" },
+                { qty: 1, unit: "lata", name: "Leche Condensada" },
+                { qty: 2, unit: "u", name: "Yemas" },
+                { qty: 0.5, unit: "taza", name: "Jugo de limón" },
+                { qty: 1, unit: "u", name: "Ralladura de limón" },
+                { qty: 2, unit: "u", name: "Claras a nieve" }
+            ],
+            instructions: "1. Mezclar la leche condensada con las yemas, el jugo y la ralladura.\n2. Incorporar las claras a nieve suavemente.\n3. Rellenar la tarta y cocinar (o solo dorar si el relleno cuaja rápido, la receta dice 'cocinar')."
+        },
+        {
+            id: 65,
+            title: "Tarta de Uvas",
+            category: "Dulce",
+            containsGluten: false,
+            imgFile: "IMG_20251202_135144035_AE.jpg",
+            ingredients: [
+                { qty: 500, unit: "gr", name: "Uva desgranada" },
+                { qty: 250, unit: "gr", name: "Azúcar" }
+            ],
+            instructions: "1. Colocar las uvas sobre una masa de tarta precocida.\n2. Espolvorear con el azúcar.\n3. Cocinar en horno hasta que las uvas suelten su jugo y se forme un almíbar."
+        },
+        {
+            id: 66,
+            title: "Torta de Mermelada y Fruta",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_135354006_AE.jpg",
+            ingredients: [
+                { qty: 400, unit: "gr", name: "Manteca" },
+                { qty: 8, unit: "u", name: "Huevos" },
+                { qty: 400, unit: "gr", name: "Azúcar" },
+                { qty: 400, unit: "gr", name: "Mermelada (gusto a elección)" },
+                { qty: 1, unit: "copa", name: "Coñac" },
+                { qty: 450, unit: "gr", name: "Harina Común" },
+                { qty: 3, unit: "cdas", name: "Polvo Royal" },
+                { qty: 150, unit: "gr", name: "Nueces" },
+                { qty: 100, unit: "gr", name: "Chocolate" },
+                { qty: 1, unit: "cant.", name: "Frutas abrillantadas y Canela" }
+            ],
+            instructions: "1. Batir manteca con azúcar y huevos.\n2. Agregar mermelada y coñac.\n3. Incorporar harina tamizada con royal y canela.\n4. Agregar frutas, nueces y chocolate picado.\n5. Hornear en molde grande a temperatura moderada (es una torta pesada tipo galesa)."
+        },
+        {
+            id: 67,
+            title: "Cremas Saladas (Untables)",
+            category: "Salado",
+            containsGluten: false,
+            imgFile: "IMG_20251202_135230104_AE.jpg",
+            ingredients: [
+                { qty: 2, unit: "u", name: "Morrones asados" },
+                { qty: 0.5, unit: "u", name: "Cebolla" },
+                { qty: 1, unit: "cdita", name: "Tomillo y Salvia" },
+                { qty: 200, unit: "gr", name: "Crema de leche" },
+                { qty: 50, unit: "gr", name: "Manteca" }
+            ],
+            instructions: "1. Saltear la cebolla en manteca con las hierbas.\n2. Agregar los morrones cortados.\n3. Al fin, agregar la crema, calentar y procesar o servir así."
+        },
+        {
+            id: 68,
+            title: "Baño de Naranja (Glaseado)",
+            category: "Dulce",
+            containsGluten: false,
+            imgFile: "IMG_20251202_135415209_AE.jpg",
+            ingredients: [
+                { qty: 500, unit: "gr", name: "Azúcar Impalpable" },
+                { qty: 0.75, unit: "taza", name: "Jugo de naranja colado" }
+            ],
+            instructions: "1. Tamizar el azúcar impalpable.\n2. Ir agregando el jugo de naranja de a poco mientras se mezcla hasta obtener la consistencia deseada para bañar."
+        },
+        {
+            id: 69,
+            title: "Masa Básica de Tarta (Dulce)",
+            category: "Dulce",
+            containsGluten: true,
+            imgFile: "IMG_20251202_134848814_AE.jpg",
+            ingredients: [
+                { qty: 1.25, unit: "taza", name: "Harina leudante" },
+                { qty: 80, unit: "gr", name: "Manteca" },
+                { qty: 5, unit: "cdas", name: "Agua fría" }
+            ],
+            instructions: "1. Mezclar la harina con la manteca formando grumos (arenado).\n2. Agregar el agua con un tenedor hasta humedecer todo.\n3. Unir rápido con la mano (no amasar). Dejar reposar en lugar fresco.\n4. Estirar con palote."
+        }
+    ];
+
+    /**
+     * APP CONTROLLER
+     */
+    const app = {
+        currentFilter: 'all',
+        currentSearch: '',
+        activeRecipe: null,
+        portionMultiplier: 1,
+
+        init() {
+            this.renderGrid();
+            
+            // Event Listener Búsqueda
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                this.currentSearch = e.target.value.toLowerCase();
+                this.renderGrid();
+            });
+        },
+
+        filter(category, btnElement) {
+            this.currentFilter = category;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            if(btnElement) btnElement.classList.add('active');
+            this.renderGrid();
+        },
+
+        getFilteredRecipes() {
+            return recipesDB.filter(r => {
+                const matchesCategory = this.currentFilter === 'all' || r.category === this.currentFilter;
+                const matchesSearch = r.title.toLowerCase().includes(this.currentSearch) || 
+                                      r.ingredients.some(i => i.name.toLowerCase().includes(this.currentSearch));
+                return matchesCategory && matchesSearch;
+            });
+        },
+
+        renderGrid() {
+            const grid = document.getElementById('recipeGrid');
+            grid.innerHTML = '';
+            
+            const recipes = this.getFilteredRecipes();
+
+            if (recipes.length === 0) {
+                grid.innerHTML = '<div class="empty-state">No encontré ninguna receta con esos datos en el cuaderno de Nini.</div>';
+                return;
+            }
+
+            recipes.forEach(r => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = () => this.openModal(r);
+                
+                const glutenBadge = r.containsGluten 
+                    ? '<span class="gluten-warning" title="Contiene TACC">CON GLUTEN</span>' 
+                    : '';
+
+                card.innerHTML = `
+                    <div class="card-body">
+                        <div class="card-category">
+                            ${r.category}
+                            ${glutenBadge}
+                        </div>
+                        <h3>${r.title}</h3>
+                        <p class="card-preview">${r.instructions.substring(0, 100)}...</p>
+                    </div>
+                    <div class="card-footer">
+                        Ver receta completa &rarr;
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        },
+
+        openModal(recipe) {
+            this.activeRecipe = recipe;
+            this.portionMultiplier = 1; 
+            
+            document.getElementById('modalTitle').innerText = recipe.title;
+            document.getElementById('modalCategory').innerText = recipe.category;
+            
+            const glutenTag = document.getElementById('modalGluten');
+            if (recipe.containsGluten) {
+                glutenTag.innerHTML = '⚠️ Contiene Gluten';
+                glutenTag.className = 'tag-gluten';
+            } else {
+                glutenTag.innerHTML = '✅ Gluten Free';
+                glutenTag.className = 'tag-gluten-free';
+            }
+
+            // Configurar Imagen Original
+            const btnOriginal = document.getElementById('viewOriginalBtn');
+            const imgContainer = document.getElementById('originalImageContainer');
+            imgContainer.classList.remove('show'); // Reset state
+            
+            if (recipe.imgFile) {
+                btnOriginal.style.display = 'inline-flex';
+                document.getElementById('originalImage').src = recipe.imgFile;
+            } else {
+                btnOriginal.style.display = 'none';
+            }
+
+            this.updateModalContent();
+            
+            const modal = document.getElementById('modalOverlay');
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('open'), 10);
+        },
+
+        closeModal(event) {
+            if (event && event.target.id !== 'modalOverlay' && !event.target.classList.contains('close-btn')) return;
+
+            const modal = document.getElementById('modalOverlay');
+            modal.classList.remove('open');
+            setTimeout(() => {
+                modal.style.display = 'none';
+                this.activeRecipe = null;
+            }, 300); 
+        },
+
+        toggleOriginalImage() {
+            const container = document.getElementById('originalImageContainer');
+            if (container.classList.contains('show')) {
+                container.classList.remove('show');
+            } else {
+                container.classList.add('show');
+            }
+        },
+
+        updatePortion(delta) {
+            if (!this.activeRecipe) return;
+            const newVal = this.portionMultiplier + delta;
+            if (newVal < 1) return;
+            
+            this.portionMultiplier = newVal;
+            this.updateModalContent();
+        },
+
+        updateModalContent() {
+            document.getElementById('portionDisplay').innerText = `x${this.portionMultiplier}`;
+            document.getElementById('modalInstructions').innerText = this.activeRecipe.instructions;
+
+            const list = document.getElementById('modalIngredients');
+            list.innerHTML = '';
+
+            this.activeRecipe.ingredients.forEach(ing => {
+                const li = document.createElement('li');
+                
+                let amount = ing.qty * this.portionMultiplier;
+                let displayAmount = Number.isInteger(amount) ? amount : amount.toFixed(1);
+
+                li.innerHTML = `
+                    <span class="ing-name">${ing.name}</span>
+                    <span class="ing-qty">${displayAmount} ${ing.unit}</span>
+                `;
+                list.appendChild(li);
+            });
+        }
+    };
+
+    // Start App
+    app.init();
+
+</script>
+</body>
+</html>
