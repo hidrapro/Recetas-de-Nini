@@ -17,6 +17,9 @@
             --ink-secondary: #5d4037;
             --ink-accent: #c62828; 
             --highlight: #ffecb3;
+            --success: #2e7d32;
+            --warning-bg: #fff3e0;
+            --warning-border: #ffb74d;
             
             --font-hand: 'Dancing Script', cursive; 
             --font-serif: 'Playfair Display', serif; 
@@ -323,7 +326,7 @@
         }
 
         .tag-gluten-free {
-            color: #2e7d32;
+            color: var(--success);
             font-weight: bold;
             display: flex;
             align-items: center;
@@ -391,6 +394,76 @@
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        /* --- CONVERSOR SIN TACC --- */
+        .gf-switch-container {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+            padding: 8px 15px;
+            background-color: rgba(46, 125, 50, 0.1);
+            border-radius: 20px;
+            border: 1px solid var(--success);
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+            margin-right: 10px;
+        }
+
+        .switch input { opacity: 0; width: 0; height: 0; }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--success);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
+        .ing-replacement {
+            color: var(--success);
+            font-weight: bold;
+            font-style: italic;
+        }
+
+        /* GF ADVICE BOX */
+        .gf-advice {
+            display: none;
+            background-color: var(--warning-bg);
+            border: 1px solid var(--warning-border);
+            color: #e65100;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .gf-advice.show { display: block; animation: fadeIn 0.5s; }
 
         /* Scaler Control */
         .scaler-container {
@@ -481,6 +554,15 @@
             <div class="recipe-tags">
                 <span id="modalCategory">Categoría</span>
                 <span id="modalGluten"></span>
+                
+                <!-- SWITCH GLUTEN FREE -->
+                <div id="gfSwitchContainer" class="gf-switch-container" style="display:none;">
+                    <label class="switch">
+                        <input type="checkbox" id="gfToggle" onchange="app.toggleGlutenFree()">
+                        <span class="slider"></span>
+                    </label>
+                    <span style="font-weight:bold; color:var(--success); font-size:0.9rem;">Adaptar a Sin TACC</span>
+                </div>
             </div>
 
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
@@ -513,6 +595,11 @@
                 <p style="margin-top:10px; font-size:0.8rem; color:#666;">(Puede demorar en cargar según el tamaño de la foto)</p>
             </div>
 
+            <!-- ADVERTENCIA GF DINAMICA -->
+            <div id="gfAdvice" class="gf-advice">
+                <strong>💡 Tip de Experto:</strong> Las harinas sin gluten (premezcla) absorben mucho más líquido que el trigo. La conversión es 1 a 1 para simplificar, pero es probable que tu masa necesite <strong>más hidratación</strong>. Agrega agua o leche extra de a cucharaditas hasta lograr la textura deseada.
+            </div>
+
             <div class="ingredients-section">
                 <h3 class="section-title">Ingredientes</h3>
                 <ul id="modalIngredients" class="ingredients-list">
@@ -531,6 +618,7 @@
 </div>
 
 <script>
+    // ... existing recipesDB array ...
     const recipesDB = [
         {
             id: 1,
@@ -1020,7 +1108,7 @@
         },
         {
             id: 29,
-            title: "Torta de Olga (masitas)",
+            title: "Torta de Olga",
             category: "Dulce",
             containsGluten: true,
             imgFile: "IMG_20251202_135208628_AE.jpg",
@@ -1678,11 +1766,28 @@
         currentSearch: '',
         activeRecipe: null,
         portionMultiplier: 1,
+        glutenFreeMode: false,
+
+        replacements: {
+            'harina leudante': 'Premezcla Sin TACC (+ 1 cdita Polvo Hornear)',
+            'harina blancaflor': 'Premezcla Sin TACC (+ 1 cdita Polvo Hornear)',
+            'harina común': 'Premezcla Sin TACC',
+            'harina': 'Premezcla Sin TACC',
+            'maizena': 'Almidón de Maíz (Certificado)',
+            'fécula de maíz': 'Almidón de Maíz (Certificado)',
+            'polvo royal': 'Polvo de Hornear (Certificado)',
+            'polvo de hornear': 'Polvo de Hornear (Certificado)',
+            'pan rallado': 'Rebozador Sin TACC (de Arroz)',
+            'vainillas': 'Vainillas Sin TACC',
+            'galletitas': 'Galletitas Sin TACC',
+            'avena': 'Avena Certificada / Copos de Arroz',
+            'masitas': 'Masitas Sin TACC',
+            'fideos': 'Fideos de Arroz/Maíz',
+            'bizcochos': 'Bizcochos Sin TACC'
+        },
 
         init() {
             this.renderGrid();
-            
-            // Event Listener Búsqueda
             document.getElementById('searchInput').addEventListener('input', (e) => {
                 this.currentSearch = e.target.value.toLowerCase();
                 this.renderGrid();
@@ -1708,7 +1813,6 @@
         renderGrid() {
             const grid = document.getElementById('recipeGrid');
             grid.innerHTML = '';
-            
             const recipes = this.getFilteredRecipes();
 
             if (recipes.length === 0) {
@@ -1744,24 +1848,36 @@
 
         openModal(recipe) {
             this.activeRecipe = recipe;
-            this.portionMultiplier = 1; 
+            this.portionMultiplier = 1;
+            this.glutenFreeMode = false; // Reset al abrir
+            
+            // Reset Toggle UI
+            document.getElementById('gfToggle').checked = false;
             
             document.getElementById('modalTitle').innerText = recipe.title;
             document.getElementById('modalCategory').innerText = recipe.category;
             
             const glutenTag = document.getElementById('modalGluten');
+            const gfContainer = document.getElementById('gfSwitchContainer');
+            const gfAdvice = document.getElementById('gfAdvice');
+
+            // Reset advice visibility
+            gfAdvice.classList.remove('show');
+
             if (recipe.containsGluten) {
                 glutenTag.innerHTML = '⚠️ Contiene Gluten';
                 glutenTag.className = 'tag-gluten';
+                gfContainer.style.display = 'flex'; // Mostrar switch solo si tiene gluten
             } else {
                 glutenTag.innerHTML = '✅ Gluten Free';
                 glutenTag.className = 'tag-gluten-free';
+                gfContainer.style.display = 'none';
             }
 
             // Configurar Imagen Original
             const btnOriginal = document.getElementById('viewOriginalBtn');
             const imgContainer = document.getElementById('originalImageContainer');
-            imgContainer.classList.remove('show'); // Reset state
+            imgContainer.classList.remove('show');
             
             if (recipe.imgFile) {
                 btnOriginal.style.display = 'inline-flex';
@@ -1779,7 +1895,6 @@
 
         closeModal(event) {
             if (event && event.target.id !== 'modalOverlay' && !event.target.classList.contains('close-btn')) return;
-
             const modal = document.getElementById('modalOverlay');
             modal.classList.remove('open');
             setTimeout(() => {
@@ -1790,18 +1905,27 @@
 
         toggleOriginalImage() {
             const container = document.getElementById('originalImageContainer');
-            if (container.classList.contains('show')) {
-                container.classList.remove('show');
+            container.classList.toggle('show');
+        },
+
+        toggleGlutenFree() {
+            this.glutenFreeMode = !this.glutenFreeMode;
+            
+            // Mostrar/Ocultar el consejo técnico
+            const gfAdvice = document.getElementById('gfAdvice');
+            if (this.glutenFreeMode) {
+                gfAdvice.classList.add('show');
             } else {
-                container.classList.add('show');
+                gfAdvice.classList.remove('show');
             }
+
+            this.updateModalContent();
         },
 
         updatePortion(delta) {
             if (!this.activeRecipe) return;
             const newVal = this.portionMultiplier + delta;
             if (newVal < 1) return;
-            
             this.portionMultiplier = newVal;
             this.updateModalContent();
         },
@@ -1818,9 +1942,29 @@
                 
                 let amount = ing.qty * this.portionMultiplier;
                 let displayAmount = Number.isInteger(amount) ? amount : amount.toFixed(1);
+                
+                let displayName = ing.name;
+                let isReplaced = false;
+
+                // Lógica de Reemplazo Inteligente
+                if (this.glutenFreeMode) {
+                    const lowerName = ing.name.toLowerCase();
+                    // Buscar coincidencia parcial con keywords
+                    for (const [key, replacement] of Object.entries(this.replacements)) {
+                        if (lowerName.includes(key)) {
+                            // Reemplazar nombre pero mantener paréntesis explicativos si los hubiera
+                            // Simplificación: Reemplazar todo el nombre base
+                            displayName = replacement + (ing.name.includes('(') ? ' ' + ing.name.substring(ing.name.indexOf('(')) : '');
+                            isReplaced = true;
+                            break; 
+                        }
+                    }
+                }
 
                 li.innerHTML = `
-                    <span class="ing-name">${ing.name}</span>
+                    <span class="ing-name ${isReplaced ? 'ing-replacement' : ''}">
+                        ${isReplaced ? '🔄 ' : ''}${displayName}
+                    </span>
                     <span class="ing-qty">${displayAmount} ${ing.unit}</span>
                 `;
                 list.appendChild(li);
@@ -1828,9 +1972,7 @@
         }
     };
 
-    // Start App
     app.init();
-
 </script>
 </body>
 </html>
