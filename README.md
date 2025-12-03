@@ -18,7 +18,7 @@ Apto Celíacos: Indicadores visuales de recetas Gluten Free o Con Gluten.
 
 Puedes visitar la versión online del recetario aquí:
 
-[Enlace a tu GitHub Pages aquí - Aparecerá después de configurar Settings > Pages]
+(https://hidrapro.github.io/Recetas-de-Nini/)
 
 Si quieres verlo en tu computadora sin internet:
 
