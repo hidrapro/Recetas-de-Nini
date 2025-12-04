@@ -480,7 +480,7 @@
         .scaler-label { font-size: 0.9rem; margin-right: 15px; color: #5d4037; font-weight: 700; }
         .scaler-btn { width: 28px; height: 28px; border-radius: 50%; border: none; background: var(--ink-primary); color: #fff; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; transition: background 0.2s; }
         .scaler-btn:hover { background: var(--ink-secondary); }
-        .scaler-value { font-size: 1.2rem; font-weight: bold; min-width: 30px; text-align: center; margin: 0 10px; font-family: var(--font-serif); }
+        .scaler-value { font-size: 1.2rem; font-weight: bold; min-width: 60px; text-align: center; margin: 0 10px; font-family: var(--font-serif); }
 
         .ingredients-section {
             margin-bottom: 40px;
@@ -568,9 +568,9 @@
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                 <!-- PORCIONES -->
                 <div class="scaler-container">
-                    <span class="scaler-label">Ajustar Receta:</span>
+                    <span class="scaler-label">Comensales / Porciones:</span>
                     <button class="scaler-btn" onclick="app.updatePortion(-1)">-</button>
-                    <span id="portionDisplay" class="scaler-value">x1</span>
+                    <span id="portionDisplay" class="scaler-value">4</span>
                     <button class="scaler-btn" onclick="app.updatePortion(1)">+</button>
                 </div>
 
@@ -1765,7 +1765,7 @@
         currentFilter: 'all',
         currentSearch: '',
         activeRecipe: null,
-        portionMultiplier: 1,
+        portionMultiplier: 1, // Se usará como factor base. 1 = 4 comensales.
         glutenFreeMode: false,
 
         replacements: {
@@ -1848,10 +1848,9 @@
 
         openModal(recipe) {
             this.activeRecipe = recipe;
-            this.portionMultiplier = 1;
-            this.glutenFreeMode = false; // Reset al abrir
+            this.portionMultiplier = 1; // RESETEA A 4 COMENSALES (1.0 factor)
+            this.glutenFreeMode = false;
             
-            // Reset Toggle UI
             document.getElementById('gfToggle').checked = false;
             
             document.getElementById('modalTitle').innerText = recipe.title;
@@ -1861,20 +1860,18 @@
             const gfContainer = document.getElementById('gfSwitchContainer');
             const gfAdvice = document.getElementById('gfAdvice');
 
-            // Reset advice visibility
             gfAdvice.classList.remove('show');
 
             if (recipe.containsGluten) {
                 glutenTag.innerHTML = '⚠️ Contiene Gluten';
                 glutenTag.className = 'tag-gluten';
-                gfContainer.style.display = 'flex'; // Mostrar switch solo si tiene gluten
+                gfContainer.style.display = 'flex'; 
             } else {
                 glutenTag.innerHTML = '✅ Gluten Free';
                 glutenTag.className = 'tag-gluten-free';
                 gfContainer.style.display = 'none';
             }
 
-            // Configurar Imagen Original
             const btnOriginal = document.getElementById('viewOriginalBtn');
             const imgContainer = document.getElementById('originalImageContainer');
             imgContainer.classList.remove('show');
@@ -1910,28 +1907,32 @@
 
         toggleGlutenFree() {
             this.glutenFreeMode = !this.glutenFreeMode;
-            
-            // Mostrar/Ocultar el consejo técnico
             const gfAdvice = document.getElementById('gfAdvice');
             if (this.glutenFreeMode) {
                 gfAdvice.classList.add('show');
             } else {
                 gfAdvice.classList.remove('show');
             }
-
             this.updateModalContent();
         },
 
         updatePortion(delta) {
             if (!this.activeRecipe) return;
-            const newVal = this.portionMultiplier + delta;
-            if (newVal < 1) return;
+            // Sumamos de a "un comensal" (0.25 del total)
+            const newVal = this.portionMultiplier + (delta * 0.25);
+            // Mínimo 0.25 (1 comensal)
+            if (newVal < 0.25) return;
+            
             this.portionMultiplier = newVal;
             this.updateModalContent();
         },
 
         updateModalContent() {
-            document.getElementById('portionDisplay').innerText = `x${this.portionMultiplier}`;
+            // Asumimos base 4 comensales = 1.0 multiplier
+            // Si multiplier es 1.25 -> 5 comensales
+            const comensales = Math.round(this.portionMultiplier * 4);
+            
+            document.getElementById('portionDisplay').innerText = comensales;
             document.getElementById('modalInstructions').innerText = this.activeRecipe.instructions;
 
             const list = document.getElementById('modalIngredients');
@@ -1941,19 +1942,21 @@
                 const li = document.createElement('li');
                 
                 let amount = ing.qty * this.portionMultiplier;
-                let displayAmount = Number.isInteger(amount) ? amount : amount.toFixed(1);
                 
+                // Formateo de decimales amigable
+                // Si es entero, mostrar entero. Si no, máximo 2 decimales para precisión en cuartos (0.25, 0.50, 0.75)
+                let displayAmount = Number.isInteger(amount) ? amount : amount.toFixed(2);
+                
+                // Limpiar ceros innecesarios (ej: 2.50 -> 2.5)
+                displayAmount = parseFloat(displayAmount); 
+
                 let displayName = ing.name;
                 let isReplaced = false;
 
-                // Lógica de Reemplazo Inteligente
                 if (this.glutenFreeMode) {
                     const lowerName = ing.name.toLowerCase();
-                    // Buscar coincidencia parcial con keywords
                     for (const [key, replacement] of Object.entries(this.replacements)) {
                         if (lowerName.includes(key)) {
-                            // Reemplazar nombre pero mantener paréntesis explicativos si los hubiera
-                            // Simplificación: Reemplazar todo el nombre base
                             displayName = replacement + (ing.name.includes('(') ? ' ' + ing.name.substring(ing.name.indexOf('(')) : '');
                             isReplaced = true;
                             break; 
